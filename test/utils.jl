@@ -76,6 +76,7 @@ end
       orthogonal, 
       sparse_init,
       truncated_normal,
+      lecun_normal,
       identity_init,
       Flux.rand32,
       Flux.randn32,
@@ -187,6 +188,27 @@ end
     end
     for (μ, σ, lo, hi) in [(6, 2, -100.0, 100), (-7.0, 10, -100, 100)]
       v = truncated_normal(size100...; mean = μ, std = σ, lo, hi)
+      @test isapprox(mean(v), μ; atol = 1f-1)
+      @test isapprox(std(v), σ; atol = 1f-1)
+    end
+  end
+
+  @testset "lecun_normal" begin
+    m = lecun_normal(100, 100)
+    @test minimum(m) ≈ -2 atol = 0.05  # default arguments
+    @test maximum(m) ≈ 2 atol = 0.05
+    @test mean(m) ≈ 0 atol = 0.1
+
+    size100 = (100, 100, 100)
+    for (μ, σ, lo, hi) in [(0.0, 1, -2, 3), (1, 2, -4.0, 5.0)]
+      v = lecun_normal(size100...; mean = μ, std = σ, lo, hi)
+      @test isapprox(mean(v), μ; atol = 1f-1)
+      @test isapprox(minimum(v), lo; atol = 1f-2)
+      @test isapprox(maximum(v), hi; atol = 1f-2)
+      @test eltype(v) == Float32  # despite some Float64 arguments
+    end
+    for (μ, σ, lo, hi) in [(6, 2, -100.0, 100), (-7.0, 10, -100, 100)]
+      v = lecun_normal(size100...; mean = μ, std = σ, lo, hi)
       @test isapprox(mean(v), μ; atol = 1f-1)
       @test isapprox(std(v), σ; atol = 1f-1)
     end
